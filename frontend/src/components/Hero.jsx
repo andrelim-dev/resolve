@@ -1,3 +1,4 @@
+import { NavLink } from "react-router";
 import { ArrowRight, Search, ShieldCheck } from "lucide-react";
 
 export default function Hero() {
@@ -25,14 +26,20 @@ export default function Hero() {
 
       {/* CTAs */}
       <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-        <button className="w-52 flex justify-center items-center gap-2 rounded-lg bg-[#2563eb] px-6 py-3 font-inter text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 cursor-pointer">
+        <NavLink
+          to="/submit-complaint"
+          className="w-52 flex justify-center items-center gap-2 rounded-lg bg-[#2563eb] px-6 py-3 font-inter text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700"
+        >
           Submit a Complaint
           <ArrowRight size={16} />
-        </button>
-        <button className="w-52 flex justify-center items-center gap-2 rounded-lg border border-slate-300 bg-white px-6 py-3 font-inter text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 cursor-pointer">
+        </NavLink>
+        <NavLink
+          to="/track-complaint"
+          className="w-52 flex justify-center items-center gap-2 rounded-lg border border-slate-300 bg-white px-6 py-3 font-inter text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+        >
           Track Complaint
           <Search size={16} />
-        </button>
+        </NavLink>
       </div>
     </section>
   );
