@@ -40,9 +40,12 @@ export default function Navbar() {
         </nav>
 
         {/* Sign in */}
-        <button className="rounded-lg border border-slate-300 px-4 py-2 font-inter text-sm font-medium text-slate-700 transition-colors hover:bg-[#2563eb] hover:border-[#2563eb] hover:text-white cursor-pointer">
+        <NavLink
+          to="/login"
+          className="rounded-lg border border-slate-300 px-4 py-2 font-inter text-sm font-medium text-slate-700 transition-colors hover:bg-[#2563eb] hover:border-[#2563eb] hover:text-white"
+        >
           Sign In
-        </button>
+        </NavLink>
       </div>
     </header>
   );
