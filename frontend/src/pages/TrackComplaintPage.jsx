@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import TrackSearchBar from "../components/TrackSearchBar";
@@ -36,6 +36,10 @@ const MOCK_TICKET = {
 };
 
 export default function TrackComplaintPage() {
+  useEffect(() => {
+    document.title = "Resolve | Track Complaint";
+  }, []);
+
   const [ticketNumber, setTicketNumber] = useState("CMP-20260810-001");
   const [ticket, setTicket] = useState(MOCK_TICKET);
 
