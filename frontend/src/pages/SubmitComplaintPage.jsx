@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Ticket, Calendar, ChevronDown, SendHorizontal } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -31,6 +31,10 @@ function formatDateGenerated() {
 }
 
 export default function SubmitComplaintPage() {
+  useEffect(() => {
+    document.title = "Resolve | Submit Complaint";
+  }, []);
+
   const [ticketNumber] = useState(generateTicketNumber);
   const [dateGenerated] = useState(formatDateGenerated);
 
