@@ -1,9 +1,13 @@
+import { useEffect } from "react";
 import { NavLink } from "react-router";
 import { Home } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
 export default function NotFoundPage() {
+  useEffect(() => {
+    document.title = "Page Not Found";
+  }, []);
   return (
     <div className="flex min-h-screen flex-col bg-[#f5f6fc] font-inter">
       <Navbar />
