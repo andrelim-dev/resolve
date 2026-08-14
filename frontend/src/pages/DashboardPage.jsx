@@ -34,7 +34,7 @@ const DUMMY_RECENT_COMPLAINTS = [
     customer: "John Doe",
     category: "Billing Issue",
     dateSubmitted: "Oct 24, 2024",
-    status: "Submitted",
+    status: "Pending",
   },
   {
     ticketId: "CMP-20241023-001",
@@ -55,7 +55,7 @@ const DUMMY_RECENT_COMPLAINTS = [
     customer: "Emily Davis",
     category: "Billing Issue",
     dateSubmitted: "Oct 20, 2024",
-    status: "Submitted",
+    status: "Pending",
   },
   {
     ticketId: "CMP-20241019-001",
