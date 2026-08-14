@@ -6,6 +6,7 @@ import TrackComplaintPage from "./pages/TrackComplaintPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import DashboardPage from "./pages/DashboardPage";
 import ComplaintManagementPage from "./pages/ComplaintManagementPage";
+import ReportManagementPage from "./pages/ReportManagementPage";
 
 function App() {
   return (
@@ -18,6 +19,10 @@ function App() {
       <Route
         path="/staff/complaint-management"
         element={<ComplaintManagementPage />}
+      />
+      <Route
+        path="/staff/report-management"
+        element={<ReportManagementPage />}
       />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
