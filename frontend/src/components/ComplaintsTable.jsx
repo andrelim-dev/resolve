@@ -136,7 +136,7 @@ export default function ComplaintsTable({
                   colSpan={6}
                   className="px-6 py-10 text-center font-inter text-sm text-slate-400"
                 >
-                  Tidak ada data yang cocok dengan filter.
+                  No data matches the selected filters.
                 </td>
               </tr>
             ) : (
@@ -212,7 +212,7 @@ export default function ComplaintsTable({
             onClick={() => onPageChange(page - 1)}
             disabled={page <= 1}
             className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 text-slate-500 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-            aria-label="Halaman sebelumnya"
+            aria-label="Previous page"
           >
             <ChevronLeft size={16} />
           </button>
@@ -220,7 +220,7 @@ export default function ComplaintsTable({
             onClick={() => onPageChange(page + 1)}
             disabled={page >= totalPages}
             className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 text-slate-500 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-            aria-label="Halaman berikutnya"
+            aria-label="Next page"
           >
             <ChevronRight size={16} />
           </button>
