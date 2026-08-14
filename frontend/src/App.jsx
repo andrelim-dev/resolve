@@ -7,6 +7,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 import DashboardPage from "./pages/DashboardPage";
 import ComplaintManagementPage from "./pages/ComplaintManagementPage";
 import ReportManagementPage from "./pages/ReportManagementPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -15,15 +16,20 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/submit-complaint" element={<SubmitComplaintPage />} />
       <Route path="/track-complaint" element={<TrackComplaintPage />} />
-      <Route path="/staff/dashboard" element={<DashboardPage />} />
-      <Route
-        path="/staff/complaint-management"
-        element={<ComplaintManagementPage />}
-      />
-      <Route
-        path="/staff/report-management"
-        element={<ReportManagementPage />}
-      />
+
+      {/* Protected Staff Routes */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/staff/dashboard" element={<DashboardPage />} />
+        <Route
+          path="/staff/complaint-management"
+          element={<ComplaintManagementPage />}
+        />
+        <Route
+          path="/staff/report-management"
+          element={<ReportManagementPage />}
+        />
+      </Route>
+
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

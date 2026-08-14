@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import {
   LayoutDashboard,
   AlertCircle,
@@ -22,11 +22,19 @@ const NAV_ITEMS = [
 export default function Sidebar({
   active = "Complaints",
   onNavigate,
-  onLogout,
+  onLogout, // ini nanti hapus aja
 }) {
+  const navigate = useNavigate();
+
   const [isOpen, setIsOpen] = useState(false);
 
   const closeMobileMenu = () => setIsOpen(false);
+
+  // Nanti ganti dengan implementasi API
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
+  };
 
   return (
     <>
@@ -103,7 +111,8 @@ export default function Sidebar({
         {/* Logout */}
         <div className="border-t border-slate-200 px-3 py-4">
           <button
-            onClick={onLogout}
+            // onClick={onLogout} // ini nanti hapus aja
+            onClick={handleLogout}
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-inter text-sm font-medium text-slate-600 cursor-pointer transition-colors hover:bg-red-100 hover:text-red-600"
           >
             <LogOut size={18} />
