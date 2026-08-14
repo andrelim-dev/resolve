@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { User } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import StatCard from "../components/StatCard";
@@ -66,6 +67,10 @@ const DUMMY_RECENT_COMPLAINTS = [
 ];
 
 export default function DashboardPage() {
+  useEffect(() => {
+    document.title = "Staff Portal | Dashboard";
+  }, []);
+
   const handleLogout = () => {
     // TODO: hapus session/token lalu redirect ke halaman login
     console.log("Logout (dummy)");
