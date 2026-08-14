@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 const STATUS_STYLES = {
-  Submitted: "bg-orange-100 text-orange-700",
+  Pending: "bg-amber-100 text-amber-700",
   Processed: "bg-indigo-100 text-indigo-700",
   Completed: "bg-emerald-600 text-white",
 };

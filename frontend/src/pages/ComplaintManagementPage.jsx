@@ -16,7 +16,7 @@ const DUMMY_COMPLAINTS = [
     customer: "John Doe",
     category: "Billing Issue",
     dateSubmitted: "Oct 24, 2024",
-    status: "Submitted",
+    status: "Pending",
     description: "Customer was charged twice for the same invoice.",
     attachments: [
       { name: "invoice-oct-2024.pdf", size: "245 KB" },
@@ -46,7 +46,7 @@ const DUMMY_COMPLAINTS = [
     customer: "Emily Davis",
     category: "Billing Issue",
     dateSubmitted: "Oct 20, 2024",
-    status: "Submitted",
+    status: "Pending",
     description: "Refund request for cancelled subscription.",
   },
   {
@@ -70,7 +70,7 @@ const DUMMY_COMPLAINTS = [
     customer: "David Miller",
     category: "Billing Issue",
     dateSubmitted: "Oct 17, 2024",
-    status: "Submitted",
+    status: "Pending",
     description: "Invoice amount does not match the agreed plan.",
   },
   {
@@ -86,7 +86,7 @@ const DUMMY_COMPLAINTS = [
     customer: "James Martinez",
     category: "Service Quality",
     dateSubmitted: "Oct 15, 2024",
-    status: "Submitted",
+    status: "Pending",
     description: "Intermittent connectivity issues reported.",
   },
   {
@@ -102,7 +102,7 @@ const DUMMY_COMPLAINTS = [
     customer: "Daniel Taylor",
     category: "Technical Problem",
     dateSubmitted: "Oct 13, 2024",
-    status: "Submitted",
+    status: "Pending",
     description: "Unable to reset two-factor authentication.",
   },
   {
