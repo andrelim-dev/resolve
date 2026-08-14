@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import { Workflow, ArrowLeft } from "lucide-react";
 import LoginForm from "../components/LoginForm";
 
@@ -8,9 +8,17 @@ export default function LoginPage() {
     document.title = "Resolve | Login";
   }, []);
 
+  const navigate = useNavigate();
+
   const handleLogin = ({ email, password, rememberMe }) => {
     // TODO: ganti dengan pemanggilan API autentikasi sesungguhnya
     console.log("Login attempt:", { email, password, rememberMe });
+    // TODO: nanti diganti hasil API
+    const fakeToken = "dummy-token";
+
+    localStorage.setItem("token", fakeToken);
+
+    navigate("/staff/dashboard");
   };
 
   return (
