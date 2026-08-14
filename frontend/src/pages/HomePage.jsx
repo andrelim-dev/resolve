@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Zap, Eye, MessageSquare } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
@@ -26,6 +27,10 @@ const features = [
 ];
 
 export default function HomePage() {
+  useEffect(() => {
+    document.title = "Resolve | Home";
+  }, []);
+
   return (
     <div className="flex min-h-screen flex-col bg-[#f5f6fc] font-inter">
       <Navbar />
