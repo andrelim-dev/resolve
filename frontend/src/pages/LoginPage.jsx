@@ -1,8 +1,13 @@
+import { useEffect } from "react";
 import { NavLink } from "react-router";
 import { Workflow, ArrowLeft } from "lucide-react";
 import LoginForm from "../components/LoginForm";
 
 export default function LoginPage() {
+  useEffect(() => {
+    document.title = "Resolve | Login";
+  }, []);
+
   const handleLogin = ({ email, password, rememberMe }) => {
     // TODO: ganti dengan pemanggilan API autentikasi sesungguhnya
     console.log("Login attempt:", { email, password, rememberMe });
