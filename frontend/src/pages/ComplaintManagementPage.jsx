@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { User } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import ComplaintFilters from "../components/ComplaintFilters";
@@ -118,6 +118,10 @@ const DUMMY_COMPLAINTS = [
 const EMPTY_FILTERS = { search: "", category: "", status: "" };
 
 export default function ComplaintManagementPage() {
+  useEffect(() => {
+    document.title = "Staff Portal | Complaint Management";
+  }, []);
+
   const [complaints, setComplaints] = useState(DUMMY_COMPLAINTS);
 
   // draftFilters = nilai input yang sedang diketik/dipilih user (belum tentu diterapkan)
