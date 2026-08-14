@@ -4,6 +4,7 @@ import LoginPage from "./pages/LoginPage";
 import SubmitComplaintPage from "./pages/SubmitComplaintPage";
 import TrackComplaintPage from "./pages/TrackComplaintPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import DashboardPage from "./pages/DashboardPage";
 import ComplaintManagementPage from "./pages/ComplaintManagementPage";
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/submit-complaint" element={<SubmitComplaintPage />} />
       <Route path="/track-complaint" element={<TrackComplaintPage />} />
+      <Route path="/staff/dashboard" element={<DashboardPage />} />
       <Route
         path="/staff/complaint-management"
         element={<ComplaintManagementPage />}
