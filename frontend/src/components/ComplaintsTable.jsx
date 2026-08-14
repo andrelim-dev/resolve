@@ -9,7 +9,7 @@ import {
 import { STATUS_OPTIONS } from "./ComplaintFilters";
 
 const STATUS_STYLES = {
-  Submitted: "bg-amber-100 text-amber-700",
+  Pending: "bg-amber-100 text-amber-700",
   Processed: "bg-indigo-100 text-indigo-700",
   Completed: "bg-emerald-600 text-white",
 };
@@ -146,7 +146,7 @@ export default function ComplaintsTable({
                   className="border-b border-slate-100 last:border-0"
                   style={{
                     borderLeft: `4px solid ${
-                      c.status === "Submitted"
+                      c.status === "Pending"
                         ? "#f97316"
                         : c.status === "Processed"
                           ? "#6366f1"

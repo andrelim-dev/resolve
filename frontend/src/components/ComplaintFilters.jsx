@@ -9,7 +9,7 @@ export const CATEGORY_OPTIONS = [
   "Other",
 ];
 
-export const STATUS_OPTIONS = ["Submitted", "Processed", "Completed"];
+export const STATUS_OPTIONS = ["Pending", "Processed", "Completed"];
 
 function FilterDropdown({ label, value, placeholder, options, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
