@@ -8,75 +8,6 @@ import ReportFilters, {
 } from "../components/ReportFilters";
 import ReportPreview from "../components/ReportPreview";
 
-// === DUMMY CATEGORY DATA ===
-// TODO: ganti dengan hasil fetch dari API berdasarkan reportType & period, misalnya:
-// const { data } = await fetch(`/api/reports?type=${reportType}&period=${period}`).then((res) => res.json());
-const DUMMY_CATEGORIES = [
-  {
-    category: "Billing Issue",
-    shortLabel: "Bill",
-    total: 450,
-    completed: 400,
-    processed: 20,
-    pending: 30,
-    color: "#2563eb",
-  },
-  {
-    category: "Technical Problem",
-    shortLabel: "Tech",
-    total: 320,
-    completed: 250,
-    processed: 50,
-    pending: 20,
-    color: "#f97316",
-  },
-  {
-    category: "Product Defect",
-    shortLabel: "Prod",
-    total: 210,
-    completed: 180,
-    processed: 10,
-    pending: 20,
-    color: "#8b5cf6",
-  },
-  {
-    category: "Service Quality",
-    shortLabel: "Serv",
-    total: 150,
-    completed: 90,
-    processed: 30,
-    pending: 30,
-    color: "#10b981",
-  },
-  {
-    category: "Other",
-    shortLabel: "Other",
-    total: 118,
-    completed: 62,
-    processed: 38,
-    pending: 18,
-    color: "#64748b",
-  },
-];
-
-function buildDummyReport(period) {
-  // nanti ganti dengan data asli
-  const total = DUMMY_CATEGORIES.reduce((sum, c) => sum + c.total, 0);
-  const completed = DUMMY_CATEGORIES.reduce((sum, c) => sum + c.completed, 0);
-  const processed = DUMMY_CATEGORIES.reduce((sum, c) => sum + c.processed, 0);
-  const pending = DUMMY_CATEGORIES.reduce((sum, c) => sum + c.pending, 0);
-
-  return {
-    period,
-    generatedAt: new Date().toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    }),
-    summary: { total, completed, processed, pending },
-    categories: DUMMY_CATEGORIES,
-  };
-}
 
 export default function ReportManagementPage() {
   useEffect(() => {
@@ -114,10 +45,85 @@ export default function ReportManagementPage() {
   // });
   // const data = await res.json();
   const handleGenerate = async () => {
-    setIsGenerating(true);
-    await new Promise((resolve) => setTimeout(resolve, 700)); // simulasi network delay
-    setReport(buildDummyReport(period));
-    setIsGenerating(false);
+    try {
+      setIsGenerating(true);
+
+      let year;
+      let month;
+
+      if (reportType === "Monthly Summary") {
+        const [monthName, yearValue] = period.split(" ");
+
+        year = Number(yearValue);
+
+        const monthNames = {
+          January: 1,
+          February: 2,
+          March: 3,
+          April: 4,
+          May: 5,
+          June: 6,
+          July: 7,
+          August: 8,
+          September: 9,
+          October: 10,
+          November: 11,
+          December: 12,
+        };
+
+        month = monthNames[monthName];
+
+        if (!month || !year) {
+          throw new Error("Format periode monthly tidak valid");
+        }
+      } else {
+        year = Number(period);
+
+        if (!year) {
+          throw new Error("Format periode yearly tidak valid");
+        }
+      }
+
+      const response = await fetch(
+        "http://localhost:3000/complainReport",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            type:
+              reportType === "Monthly Summary"
+                ? "monthly"
+                : "yearly",
+
+            year,
+
+            ...(reportType === "Monthly Summary" && {
+              month,
+            }),
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.message || "Gagal membuat report"
+        );
+      }
+
+      console.log("Report berhasil:", result);
+
+      setReport(result.data);
+
+    } catch (error) {
+      console.error("Gagal membuat report:", error);
+      alert(error.message);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleLogout = () => {

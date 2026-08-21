@@ -14,21 +14,39 @@ const STATUS_STYLES = {
   Completed: "bg-emerald-600 text-white",
 };
 
-// === DUMMY DOWNLOAD FUNCTION ===
-// TODO: ganti dengan pemanggilan API sesungguhnya, misalnya:
-// const res = await fetch(`/api/attachments/${attachment.id}/download`);
-// const blob = await res.blob();
-// const url = URL.createObjectURL(blob);
-// const link = document.createElement("a");
-// link.href = url;
-// link.download = attachment.name;
-// link.click();
-// URL.revokeObjectURL(url);
-function downloadAttachment(attachment) {
-  console.log("Downloading attachment (dummy):", attachment);
-  console.log(
-    `Downloading "${attachment.name}" (dummy — belum terhubung ke API).`,
-  );
+async function downloadAttachment(attachment) {
+  try {
+    const response = await fetch(
+      `http://localhost:3000/attachment/download/${attachment.id_complain}?file=${encodeURIComponent(
+        attachment.file
+      )}`
+    );
+
+    if (!response.ok) {
+      const result = await response.json().catch(() => null);
+
+      throw new Error(
+        result?.message || "Gagal mendownload attachment"
+      );
+    }
+
+    const blob = await response.blob();
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = attachment.file;
+
+    document.body.appendChild(link);
+    link.click();
+
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Gagal download attachment:", error);
+    alert(error.message);
+  }
 }
 
 export default function ComplaintDetailModal({ complaint, onClose }) {
@@ -134,13 +152,13 @@ export default function ComplaintDetailModal({ complaint, onClose }) {
               <ul className="space-y-2">
                 {attachments.map((file, index) => (
                   <li
-                    key={`${file.name}-${index}`}
+                    key={`${file.file}-${index}`}
                     className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2"
                   >
                     <div className="flex min-w-0 items-center gap-2">
                       <FileText size={16} className="shrink-0 text-slate-400" />
                       <span className="truncate font-inter text-sm text-slate-700">
-                        {file.name}
+                        {file.file}
                       </span>
                       {file.size && (
                         <span className="shrink-0 font-inter text-xs text-slate-400">
@@ -151,7 +169,7 @@ export default function ComplaintDetailModal({ complaint, onClose }) {
                     <button
                       onClick={() => downloadAttachment(file)}
                       className="flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-inter text-xs font-semibold text-[#2563eb] cursor-pointer hover:bg-[#2563eb]/10"
-                      aria-label={`Download ${file.name}`}
+                      aria-label={`Download ${file.file}`}
                     >
                       <Download size={14} />
                       Download

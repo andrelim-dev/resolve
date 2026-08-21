@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { User } from "lucide-react";
+
 import Sidebar from "../components/Sidebar";
 import ComplaintFilters from "../components/ComplaintFilters";
 import ComplaintsTable from "../components/ComplaintsTable";
@@ -7,149 +8,100 @@ import ComplaintDetailModal from "../components/ComplaintDetailModal";
 
 const PAGE_SIZE = 5;
 
-// === DUMMY DATA ===
-// TODO: ganti dengan hasil fetch dari API, misalnya:
-// const { data } = await fetch("/api/complaints").then((res) => res.json());
-const DUMMY_COMPLAINTS = [
-  {
-    ticketId: "CMP-20241024-001",
-    customer: "John Doe",
-    category: "Billing Issue",
-    dateSubmitted: "Oct 24, 2024",
-    status: "Pending",
-    description: "Customer was charged twice for the same invoice.",
-    attachments: [
-      { name: "invoice-oct-2024.pdf", size: "245 KB" },
-      { name: "payment-receipt.jpg", size: "1.1 MB" },
-    ],
-  },
-  {
-    ticketId: "CMP-20241023-001",
-    customer: "Alice Smith",
-    category: "Service Quality",
-    dateSubmitted: "Oct 23, 2024",
-    status: "Processed",
-    description: "Service was down for 3 hours in the customer's region.",
-    attachments: [{ name: "outage-screenshot.png", size: "890 KB" }],
-  },
-  {
-    ticketId: "CMP-20241021-001",
-    customer: "Michael Johnson",
-    category: "Technical Problem",
-    dateSubmitted: "Oct 21, 2024",
-    status: "Completed",
-    description: "Login issue resolved after password reset.",
-    attachments: [],
-  },
-  {
-    ticketId: "CMP-20241020-001",
-    customer: "Emily Davis",
-    category: "Billing Issue",
-    dateSubmitted: "Oct 20, 2024",
-    status: "Pending",
-    description: "Refund request for cancelled subscription.",
-  },
-  {
-    ticketId: "CMP-20241019-001",
-    customer: "Robert Wilson",
-    category: "Technical Problem",
-    dateSubmitted: "Oct 19, 2024",
-    status: "Processed",
-    description: "App crashes when uploading attachments.",
-  },
-  {
-    ticketId: "CMP-20241018-001",
-    customer: "Sarah Brown",
-    category: "Service Quality",
-    dateSubmitted: "Oct 18, 2024",
-    status: "Completed",
-    description: "Outage traced to a regional network issue, now fixed.",
-  },
-  {
-    ticketId: "CMP-20241017-001",
-    customer: "David Miller",
-    category: "Billing Issue",
-    dateSubmitted: "Oct 17, 2024",
-    status: "Pending",
-    description: "Invoice amount does not match the agreed plan.",
-  },
-  {
-    ticketId: "CMP-20241016-001",
-    customer: "Laura Garcia",
-    category: "Technical Problem",
-    dateSubmitted: "Oct 16, 2024",
-    status: "Completed",
-    description: "Guided customer through app reinstallation.",
-  },
-  {
-    ticketId: "CMP-20241015-001",
-    customer: "James Martinez",
-    category: "Service Quality",
-    dateSubmitted: "Oct 15, 2024",
-    status: "Pending",
-    description: "Intermittent connectivity issues reported.",
-  },
-  {
-    ticketId: "CMP-20241014-001",
-    customer: "Olivia Anderson",
-    category: "Billing Issue",
-    dateSubmitted: "Oct 14, 2024",
-    status: "Processed",
-    description: "Requesting itemized billing breakdown.",
-  },
-  {
-    ticketId: "CMP-20241013-001",
-    customer: "Daniel Taylor",
-    category: "Technical Problem",
-    dateSubmitted: "Oct 13, 2024",
-    status: "Pending",
-    description: "Unable to reset two-factor authentication.",
-  },
-  {
-    ticketId: "CMP-20241012-001",
-    customer: "Sophia Thomas",
-    category: "Service Quality",
-    dateSubmitted: "Oct 12, 2024",
-    status: "Completed",
-    description: "Confirmed service restored, customer notified.",
-  },
-];
-
-const EMPTY_FILTERS = { search: "", category: "", status: "" };
+const EMPTY_FILTERS = {
+  search: "",
+  category: "",
+  status: "",
+};
 
 export default function ComplaintManagementPage() {
-  useEffect(() => {
-    document.title = "Staff Portal | Complaint Management";
-  }, []);
+  const [complaints, setComplaints] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [complaints, setComplaints] = useState(DUMMY_COMPLAINTS);
-
-  // draftFilters = nilai input yang sedang diketik/dipilih user (belum tentu diterapkan)
-  // appliedFilters = nilai filter yang benar-benar aktif, baru berubah saat tombol "Filter" ditekan
   const [draftFilters, setDraftFilters] = useState(EMPTY_FILTERS);
   const [appliedFilters, setAppliedFilters] = useState(EMPTY_FILTERS);
 
   const [page, setPage] = useState(1);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
 
+  // =====================================================
+  // FETCH COMPLAINT
+  // =====================================================
+
+  useEffect(() => {
+    document.title = "Staff Portal | Complaint Management";
+
+    const fetchComplaints = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:3000/showAllComplain",
+          {
+            method: "POST",
+          }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            result.message || "Gagal mengambil data complaint"
+          );
+        }
+
+        console.log("SHOW ALL COMPLAINT RESPONSE:", result.data);
+
+        const formattedComplaints = result.data.map((complaint) => ({
+          ticketId: complaint.cpm_code,
+          customer: complaint.name,
+          category: complaint.category,
+          dateSubmitted: complaint.generate_at,
+          status: complaint.status,
+          id_complain: complaint.id_complain,
+
+          // Attachments
+          attachments: complaint.attachments || [],
+        }));
+
+        console.log("FORMATTED COMPLAINTS:", formattedComplaints);
+
+        setComplaints(formattedComplaints);
+      } catch (error) {
+        console.error("Gagal mengambil complaint:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchComplaints();
+  }, []);
+
   const filteredComplaints = useMemo(() => {
     const { search, category, status } = appliedFilters;
     const keyword = search.trim().toLowerCase();
 
-    return complaints.filter((c) => {
+    return complaints.filter((complaint) => {
       const matchesSearch =
         !keyword ||
-        c.ticketId.toLowerCase().includes(keyword) ||
-        c.customer.toLowerCase().includes(keyword);
-      const matchesCategory = !category || c.category === category;
-      const matchesStatus = !status || c.status === status;
+        (complaint.ticketId || "").toLowerCase().includes(keyword) ||
+        (complaint.customer || "").toLowerCase().includes(keyword);
+
+      const matchesCategory =
+        !category || complaint.category === category;
+
+      const matchesStatus =
+        !status || complaint.status === status;
+
       return matchesSearch && matchesCategory && matchesStatus;
     });
   }, [complaints, appliedFilters]);
 
   const paginatedComplaints = useMemo(() => {
     const startIndex = (page - 1) * PAGE_SIZE;
-    return filteredComplaints.slice(startIndex, startIndex + PAGE_SIZE);
+
+    return filteredComplaints.slice(
+      startIndex,
+      startIndex + PAGE_SIZE
+    );
   }, [filteredComplaints, page]);
 
   const handleApplyFilter = () => {
@@ -163,24 +115,73 @@ export default function ComplaintManagementPage() {
     setPage(1);
   };
 
-  // === DUMMY STATUS UPDATE FUNCTION ===
-  // TODO: ganti dengan pemanggilan API sesungguhnya, misalnya:
-  // await fetch(`/api/complaints/${ticketId}/status`, {
-  //   method: "PATCH",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify({ status: newStatus }),
-  // });
-  const handleStatusChange = (ticketId, newStatus) => {
-    console.log("Updating status (dummy):", ticketId, "->", newStatus);
-    setComplaints((prev) =>
-      prev.map((c) =>
-        c.ticketId === ticketId ? { ...c, status: newStatus } : c,
-      ),
-    );
+  // =====================================================
+  // STATUS UPDATE
+  // =====================================================
+
+  const handleStatusChange = async (complaint, newStatus) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/complain/${complaint.id_complain}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status: newStatus,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || data.message || "Gagal update status"
+        );
+      }
+
+      console.log("Status berhasil diupdate:", data);
+
+      // Update status di frontend
+      setComplaints((prev) =>
+        prev.map((item) =>
+          item.id_complain === complaint.id_complain
+            ? {
+                ...item,
+                status: newStatus,
+              }
+            : item
+        )
+      );
+
+      // Kalau modal sedang terbuka untuk complaint ini,
+      // ikut update statusnya
+      setSelectedComplaint((prev) => {
+        if (
+          !prev ||
+          prev.id_complain !== complaint.id_complain
+        ) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          status: newStatus,
+        };
+      });
+    } catch (error) {
+      console.error("Gagal update status:", error);
+      alert(error.message);
+    }
   };
 
+  // =====================================================
+  // LOGOUT
+  // =====================================================
+
   const handleLogout = () => {
-    // TODO: hapus session/token lalu redirect ke halaman login
     console.log("Logout (dummy)");
   };
 
