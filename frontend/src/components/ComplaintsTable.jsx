@@ -31,7 +31,7 @@ function initialsOf(name) {
     .toUpperCase();
 }
 
-function StatusDropdown({ ticketId, value, onChange }) {
+function StatusDropdown({ complaint, value, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
 
@@ -47,7 +47,7 @@ function StatusDropdown({ ticketId, value, onChange }) {
   }, []);
 
   const handleSelect = (option) => {
-    onChange(ticketId, option);
+    onChange(complaint, option);
     setIsOpen(false);
   };
 
@@ -179,7 +179,7 @@ export default function ComplaintsTable({
                   </td>
                   <td className="px-6 py-4">
                     <StatusDropdown
-                      ticketId={c.ticketId}
+                      complaint={c}
                       value={c.status}
                       onChange={onStatusChange}
                     />

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Ticket, Calendar, ChevronDown, SendHorizontal } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -12,31 +12,14 @@ const CATEGORIES = [
   "Other",
 ];
 
-// Dummy generator — pada implementasi nyata, nomor tiket biasanya
-// dibuat oleh backend saat draft complaint dibuat / setelah submit berhasil.
-function generateTicketNumber() {
-  const today = new Date();
-  const y = today.getFullYear();
-  const m = String(today.getMonth() + 1).padStart(2, "0");
-  const d = String(today.getDate()).padStart(2, "0");
-  return `CMP-${y}${m}${d}-001`;
-}
-
-function formatDateGenerated() {
-  return new Date().toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
 
 export default function SubmitComplaintPage() {
-  useEffect(() => {
-    document.title = "Resolve | Submit Complaint";
-  }, []);
+  const hasGenerated = useRef(false);
 
-  const [ticketNumber] = useState(generateTicketNumber);
-  const [dateGenerated] = useState(formatDateGenerated);
+  const [ticketNumber, setTicketNumber] = useState("");
+  const [dateGenerated, setDateGenerated] = useState("");
+  const [complaintId, setComplaintId] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(true);
 
   const [customerName, setCustomerName] = useState("");
   const [category, setCategory] = useState("");
@@ -46,78 +29,173 @@ export default function SubmitComplaintPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
 
+  // =========================
+  // GENERATE TICKET
+  // =========================
+  useEffect(() => {
+    document.title = "Resolve | Submit Complaint";
+
+    // Mencegah generate 2x saat React StrictMode
+    if (hasGenerated.current) return;
+
+    hasGenerated.current = true;
+
+    const generateComplaint = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:3000/generateComplain",
+          {
+            method: "POST",
+          }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            result.message || "Gagal generate ticket"
+          );
+        }
+
+        console.log("Ticket generated:", result);
+
+        setComplaintId(result.data.id_complain);
+        setTicketNumber(result.data.CMP_code);
+
+        const date = new Date(
+          result.data.generate_at
+        ).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+
+        setDateGenerated(date);
+      } catch (error) {
+        console.error("Gagal generate ticket:", error);
+
+        alert(
+          error.message ||
+            "Gagal membuat ticket. Silakan refresh halaman."
+        );
+      } finally {
+        setIsGenerating(false);
+      }
+    };
+
+    generateComplaint();
+  }, []);
+
+  // =========================
+  // VALIDATION
+  // =========================
   const validate = () => {
     const newErrors = {};
-    if (!customerName.trim()) newErrors.customerName = "Name is required.";
-    if (!category) newErrors.category = "Category is required.";
-    if (!description.trim()) newErrors.description = "Description is required.";
+
+    if (!customerName.trim()) {
+      newErrors.customerName = "Name is required.";
+    }
+
+    if (!category) {
+      newErrors.category = "Category is required.";
+    }
+
+    if (!description.trim()) {
+      newErrors.description = "Description is required.";
+    }
+
     setErrors(newErrors);
+
     return Object.keys(newErrors).length === 0;
   };
 
-  // === DUMMY SUBMIT FUNCTION ===
-  // TODO: ganti isi fungsi ini dengan pemanggilan API sesungguhnya, misalnya:
-  //
-  // const formData = new FormData();
-  // formData.append("ticketNumber", ticketNumber);
-  // formData.append("customerName", customerName);
-  // formData.append("category", category);
-  // formData.append("description", description);
-  // files.forEach((file) => formData.append("attachments", file));
-  //
-  // const res = await fetch("/api/complaints", {
-  //   method: "POST",
-  //   body: formData,
-  // });
-  // if (!res.ok) throw new Error("Gagal mengirim complaint");
-  const submitComplaint = async (payload) => {
-    // console.log("Submitting complaint (dummy):", payload);
+  // =========================
+  // SUBMIT COMPLAINT
+  // =========================
+  const submitComplaint = async () => {
+    const formData = new FormData();
 
-    // Simulasi delay network
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    formData.append("name", customerName);
+    formData.append("category", category);
+    formData.append("description", description);
 
-    // Simulasi response sukses dari server
-    return {
-      success: true,
-      ticketNumber: payload.ticketNumber,
-    };
+    files.forEach((file) => {
+      formData.append("attachments", file);
+    });
+
+    const response = await fetch(
+      `http://localhost:3000/${complaintId}/submitComplain`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.message || "Gagal mengirim complaint"
+      );
+    }
+
+    return result;
   };
 
+  // =========================
+  // HANDLE SUBMIT
+  // =========================
   const handleSubmit = async () => {
     if (!validate()) return;
 
-    setIsSubmitting(true);
-    try {
-      const result = await submitComplaint({
-        ticketNumber,
-        customerName,
-        category,
-        description,
-        files,
-      });
+    if (!complaintId) {
+      alert("Ticket belum siap. Silakan tunggu sebentar.");
+      return;
+    }
 
-      if (result.success) {
-        alert(
-          `Complaint submitted successfully. Ticket number: ${result.ticketNumber}`,
-        );
-        // TODO: redirect ke halaman Track Complaint / halaman sukses
-      }
-    } catch (err) {
+    if (isGenerating) {
+      alert("Ticket sedang dipersiapkan.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const result = await submitComplaint();
+
+      console.log("Complaint submitted:", result);
+
       alert(
-        "An error occurred while submitting the complaint. Please try again.",
+        `Complaint submitted successfully.\nTicket number: ${result.data.cmp_code}`
+      );
+
+      // Reset form
+      setCustomerName("");
+      setCategory("");
+      setDescription("");
+      setFiles([]);
+      setErrors({});
+    } catch (error) {
+      console.error("Gagal submit complaint:", error);
+
+      alert(
+        error.message ||
+          "An error occurred while submitting the complaint."
       );
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // =========================
+  // CANCEL
+  // =========================
   const handleCancel = () => {
     setCustomerName("");
     setCategory("");
     setDescription("");
     setFiles([]);
     setErrors({});
-    // TODO: bisa juga diarahkan navigate("/") kalau pakai React Router
   };
 
   return (
@@ -260,15 +338,15 @@ export default function SubmitComplaintPage() {
               <button
                 type="button"
                 onClick={handleCancel}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isGenerating || !complaintId}
                 className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 font-inter text-sm font-semibold text-slate-700 transition-colors cursor-pointer hover:bg-slate-50 disabled:opacity-50"
               >
-                Cancel
+                cancel
               </button>
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isGenerating || !complaintId}
                 className="flex items-center gap-2 rounded-lg bg-[#2563eb] px-5 py-2.5 font-inter text-sm font-semibold text-white shadow-sm transition-colors cursor-pointer hover:bg-blue-700 disabled:opacity-60"
               >
                 {isSubmitting ? "Submitting..." : "Submit Complaint"}

@@ -10,16 +10,45 @@ export default function LoginPage() {
 
   const navigate = useNavigate();
 
-  const handleLogin = ({ email, password, rememberMe }) => {
-    // TODO: ganti dengan pemanggilan API autentikasi sesungguhnya
-    console.log("Login attempt:", { email, password, rememberMe });
-    // TODO: nanti diganti hasil API
-    const fakeToken = "dummy-token";
+  const handleLogin = async ({ email, password, rememberMe }) => {
+    try {
+        const response = await fetch("http://localhost:3000/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                email,
+                password,
+            }),
+        });
 
-    localStorage.setItem("token", fakeToken);
+        const data = await response.json();
 
-    navigate("/staff/dashboard");
-  };
+        if (!response.ok) {
+            throw new Error(data.message || "Login gagal");
+        }
+
+        console.log("Login berhasil:", data);
+
+        // Simpan data yang diperlukan
+        localStorage.setItem("userToken", JSON.stringify(data.data));
+
+        // Kalau remember me dicentang
+        if (rememberMe) {
+            localStorage.setItem("rememberMe", "true");
+        } else {
+            localStorage.removeItem("rememberMe");
+        }
+
+        navigate("/staff/dashboard");
+
+    } catch (error) {
+        console.error("Login gagal:", error);
+
+        alert(error.message);
+    }
+};
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f5f6fc] px-6 font-inter">

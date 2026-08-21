@@ -1,85 +1,167 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { User } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import StatCard from "../components/StatCard";
 import CategoryDonutChart from "../components/CategoryDonutChart";
 import RecentComplaintsTable from "../components/RecentComplaintsTable";
 
-// === DUMMY DATA ===
-// TODO: ganti dengan hasil fetch dari API, misalnya:
-// const { data } = await fetch("/api/dashboard/summary").then((res) => res.json());
-const DUMMY_STATS = {
-  total: 12,
-  completed: 4,
-  inProgress: 3,
-  pending: 5,
-};
-
-// TODO: ganti dengan hasil agregasi complaint per kategori dari API, misalnya:
-// const { data } = await fetch("/api/dashboard/complaints-by-category").then((res) => res.json());
-const DUMMY_CATEGORY_BREAKDOWN = [
-  { label: "Billing Issue", value: 4, color: "#2563eb" },
-  { label: "Service Quality", value: 4, color: "#10b981" },
-  { label: "Technical Problem", value: 4, color: "#f97316" },
-  { label: "Product Defect", value: 0, color: "#8b5cf6" },
-  { label: "Other", value: 0, color: "#64748b" },
-];
-
-// Data dummy sesuai yang diberikan.
-// TODO: ganti dengan hasil fetch dari API, misalnya:
-// const { data } = await fetch("/api/complaints?limit=5&sort=latest").then((res) => res.json());
-const DUMMY_RECENT_COMPLAINTS = [
-  {
-    ticketId: "CMP-20241024-001",
-    customer: "John Doe",
-    category: "Billing Issue",
-    dateSubmitted: "Oct 24, 2024",
-    status: "Pending",
-  },
-  {
-    ticketId: "CMP-20241023-001",
-    customer: "Alice Smith",
-    category: "Service Quality",
-    dateSubmitted: "Oct 23, 2024",
-    status: "Processed",
-  },
-  {
-    ticketId: "CMP-20241021-001",
-    customer: "Michael Johnson",
-    category: "Technical Problem",
-    dateSubmitted: "Oct 21, 2024",
-    status: "Completed",
-  },
-  {
-    ticketId: "CMP-20241020-001",
-    customer: "Emily Davis",
-    category: "Billing Issue",
-    dateSubmitted: "Oct 20, 2024",
-    status: "Pending",
-  },
-  {
-    ticketId: "CMP-20241019-001",
-    customer: "Robert Wilson",
-    category: "Technical Problem",
-    dateSubmitted: "Oct 19, 2024",
-    status: "Processed",
-  },
-];
-
 export default function DashboardPage() {
+  const [stats, setStats] = useState({
+    total: 0,
+    completed: 0,
+    inProgress: 0,
+    pending: 0,
+  });
+
+  const [categoryBreakdown, setCategoryBreakdown] = useState([]);
+
+  const [recentComplaints, setRecentComplaints] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     document.title = "Staff Portal | Dashboard";
-  }, []);
 
+    const fetchDashboardData = async () => {
+      try {
+        const [
+          complaintStatisticResponse,
+          categoryStatisticResponse,
+          recentComplaintResponse,
+        ] = await Promise.all([
+          fetch("http://localhost:3000/complainStatistic", {
+            method: "POST",
+          }),
+
+          fetch("http://localhost:3000/categoryStatistic", {
+            method: "POST",
+          }),
+
+          fetch("http://localhost:3000/showComplain", {
+            method: "POST",
+          }),
+        ]);
+
+        const complaintStatistic =
+          await complaintStatisticResponse.json();
+
+        const categoryStatistic =
+          await categoryStatisticResponse.json();
+
+        const recentComplaint =
+          await recentComplaintResponse.json();
+
+        // Cek error
+        if (!complaintStatisticResponse.ok) {
+          throw new Error(
+            complaintStatistic.message ||
+              "Gagal mengambil statistik complaint"
+          );
+        }
+
+        if (!categoryStatisticResponse.ok) {
+          throw new Error(
+            categoryStatistic.message ||
+              "Gagal mengambil statistik category"
+          );
+        }
+
+        if (!recentComplaintResponse.ok) {
+          throw new Error(
+            recentComplaint.message ||
+              "Gagal mengambil complaint terbaru"
+          );
+        }
+
+        // =========================
+        // STATISTIK COMPLAINT
+        // =========================
+
+        setStats({
+          total: complaintStatistic.data.total,
+          completed: complaintStatistic.data.statistics.complete,
+          inProgress: complaintStatistic.data.statistics.process,
+          pending: complaintStatistic.data.statistics.pending,
+        });
+
+        // =========================
+        // STATISTIK CATEGORY
+        // =========================
+
+        const category =
+          categoryStatistic.data.statistics;
+
+        setCategoryBreakdown([
+          {
+            label: "Billing Issue",
+            value: category.billing_issue,
+            color: "#2563eb",
+          },
+          {
+            label: "Service Quality",
+            value: category.service_quality,
+            color: "#10b981",
+          },
+          {
+            label: "Technical Problem",
+            value: category.technical_problem,
+            color: "#f97316",
+          },
+          {
+            label: "Product Defect",
+            value: category.product_defect,
+            color: "#8b5cf6",
+          },
+          {
+            label: "Other",
+            value: category.other,
+            color: "#64748b",
+          },
+        ]);
+
+        // =========================
+        // COMPLAINT TERBARU
+        // =========================
+
+        const complaints = recentComplaint.data.map(
+          (complaint) => ({
+            ticketId: complaint.cpm_code,
+            customer: complaint.name,
+            category: complaint.category,
+            dateSubmitted: complaint.generate_at,
+            status: complaint.status,
+            id_complain: complaint.id_complain,
+          })
+        );
+
+        setRecentComplaints(complaints);
+
+      } catch (error) {
+        console.error(
+          "Gagal mengambil data dashboard:",
+          error
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+  
+  //sementara kek gini, supaya bisa run
   const handleLogout = () => {
-    // TODO: hapus session/token lalu redirect ke halaman login
-    console.log("Logout (dummy)");
+    localStorage.removeItem("user");
+    localStorage.removeItem("rememberMe");
+
+    window.location.href = "/login";
   };
 
   const handleViewComplaint = (complaint) => {
-    // TODO: arahkan ke halaman detail complaint, misalnya navigate(`/staff/complaints/${complaint.ticketId}`)
-    console.log("View complaint (dummy):", complaint);
+    console.log("View complaint:", complaint);
   };
+  //sampe sini
+
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f5f6fc] font-inter md:flex-row">
@@ -99,20 +181,20 @@ export default function DashboardPage() {
         <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
           {/* Stat cards */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard label="Total Complaints" value={DUMMY_STATS.total} />
+            <StatCard label="Total Complaints" value={stats.total} />
             <StatCard
               label="Completed"
-              value={DUMMY_STATS.completed}
+              value={stats.completed}
               valueColor="text-emerald-600"
             />
             <StatCard
               label="In Progress"
-              value={DUMMY_STATS.inProgress}
+              value={stats.inProgress}
               valueColor="text-[#2563eb]"
             />
             <StatCard
               label="Pending"
-              value={DUMMY_STATS.pending}
+              value={stats.pending}
               valueColor="text-red-600"
             />
           </div>
@@ -124,7 +206,7 @@ export default function DashboardPage() {
                 Complaints by Category
               </h2>
               <div className="mt-5">
-                <CategoryDonutChart data={DUMMY_CATEGORY_BREAKDOWN} />
+                <CategoryDonutChart data={categoryBreakdown} />
               </div>
             </div>
 
@@ -134,7 +216,7 @@ export default function DashboardPage() {
               </h2>
               <div className="mt-4">
                 <RecentComplaintsTable
-                  complaints={DUMMY_RECENT_COMPLAINTS}
+                  complaints={recentComplaints}
                   onView={handleViewComplaint}
                 />
               </div>
